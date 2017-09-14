@@ -2,8 +2,12 @@
 title: "Homework 1"
 
 output:
-  html_document:
-    toc: yes
+  rmarkdown::github_document:
+    toc: true
+
+# output:
+#   html_document:
+#     toc: yes
     
 # output:
 #   html_notebook:
