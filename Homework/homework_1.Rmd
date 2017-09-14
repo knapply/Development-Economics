@@ -1,23 +1,38 @@
 ---
 title: "Homework 1"
-output: html_notebook
+
+output:
+  html_document:
+    toc: yes
+    
+# output:
+#   html_notebook:
+#     toc: yes
+
+# output: word_document
 ---
-
-```{r}
+```{r dependencies, message=FALSE, warning=FALSE, paged.print=FALSE}
+# load dependencies
 library(tidyverse)
+library(pander)
 
-# setwd("C:/Users/Windows/OneDrive - Middlebury College/Fall2017/Development_Economics")
-
-# df <- as_tibble(read.csv("1.csv"))
-
+```
+#Data
+##Read
+```{r read data}
 df <- as_tibble(read.csv("~/Development-Economics/data/index_test_data.csv"))
 
-
-# rownames(df) <- df$X
-
-df
 ```
 
+##Inspect
+```{r}
+df %>%
+  pander()
+
+```
+
+##Normalize
+"Normalization Process: Divide (cardinal number – minimum) by (maximum – minimum)"
 ```{r}
 normalize<-function(x){
    (x - min(x)) / (max(x) - min(x))
@@ -26,44 +41,61 @@ normalize<-function(x){
 norm.df <- df %>%
   mutate_if(is.numeric, funs(normalize))
 
-norm.df
+norm.df %>%
+  pander()
 
 ```
 
+##Weighting
+###Assign Weights
 ```{r}
-pi.weight <- 0.25
-col.weight <- 0.2
-lang.weight <- 0.15
-amen.weight <- 0.4
+# weights
+pollution.index.wt <- 0.25
+cost.of.living.wt <- 0.2
+language.wt <- 0.15
+misc.amen.wt <- 0.4
 
-sum(pi.weight, col.weight, lang.weight, amen.weight)
+weights <- c(pollution.index.wt,
+             cost.of.living.wt,
+             language.wt,
+             misc.amen.wt)
 
-weighted.norm.df <- norm.df %>%
-  mutate(Pollution.index = Pollution.index * pi.weight) %>%
-  mutate(Cost.of.living = Cost.of.living * col.weight) %>%
-  mutate(Language = Language * lang.weight) %>%
-  mutate(Misc.Amenities = Misc.Amenities * amen.weight)
-
-weighted.norm.df
+# confirm weights sum to 1
+sum(weights) == 1
 
 ```
 
+###Weight Data
+```{r}
+weighted.norm.df <- norm.df %>%
+  mutate(Pollution.index = Pollution.index * pollution.index.wt) %>%
+  mutate(Cost.of.living = Cost.of.living * cost.of.living.wt) %>%
+  mutate(Language = Language * language.wt) %>%
+  mutate(Misc.Amenities = Misc.Amenities * misc.amen.wt)
+
+weighted.norm.df %>%
+  pander()
+
+```
 
 
 ```{r}
 weighted.norm.df %>%
-    gather(key = var_name, value = value, 2:ncol(weighted.norm.df)) %>% 
-    spread_(key = names(weighted.norm.df)[1],value = 'value')
+  filter(City %in% "Shanghai") %>%
+  pander()
 
-
-as_tibble(cbind(nms = names(weighted.norm.df), t(weighted.norm.df)))
-
-# %>% 
-#    gather(var, value, -rowname) %>% 
-#    spread(rowname, value) 
-
-# weighted.norm.df.trans[order(match(weighted.norm.df.trans$var,names(weighted.norm.df))),]
 ```
+
+
+```{r}
+emphasize.strong.rows(which(weighted.norm.df$City == "Shanghai", arr.ind = TRUE))
+
+pander(weighted.norm.df)
+
+```
+
+
+
 
 
 
