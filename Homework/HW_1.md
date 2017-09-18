@@ -12,17 +12,17 @@ Team Syria
     -   [Prep Output](#prep-output)
     -   [Summary Table](#summary-table)
 
-<style>
-    body .main-container {
-        max-width: 90%;
-    }
-</style>
-<style>
-th, td {
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
-}
-</style>
+<!-- <style> -->
+<!--     body .main-container { -->
+<!--         max-width: 90%; -->
+<!--     } -->
+<!-- </style> -->
+<!-- <style> -->
+<!-- th, td { -->
+<!--     border-bottom: 1px solid black; -->
+<!--     border-right: 1px solid black; -->
+<!-- } -->
+<!-- </style> -->
 ``` r
 library(googledrive)
 library(tidyverse)
