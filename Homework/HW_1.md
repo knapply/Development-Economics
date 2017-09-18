@@ -235,6 +235,8 @@ WBD.matrix.t <- WBD_norm %>%
   na.omit() 
 
 combo.matrix <- rbind(WBD.matrix.t, Score)
+
+emphasize.strong.rows(nrow(combo.matrix))
 ```
 
 Summary Table
@@ -246,27 +248,27 @@ pander(combo.matrix)
 
 <table>
 <colgroup>
-<col width="19%" />
-<col width="6%" />
-<col width="7%" />
-<col width="7%" />
-<col width="7%" />
-<col width="15%" />
-<col width="11%" />
-<col width="16%" />
+<col width="20%" />
 <col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="8%" />
+<col width="13%" />
+<col width="9%" />
+<col width="16%" />
+<col width="7%" />
 </colgroup>
 <tbody>
 <tr class="odd">
 <td align="center"><strong>Country Name</strong></td>
-<td align="center"><strong>Cuba</strong></td>
-<td align="center"><strong>Ghana</strong></td>
-<td align="center"><strong>India</strong></td>
-<td align="center"><strong>Mexico</strong></td>
-<td align="center"><strong>Russian Federation</strong></td>
-<td align="center"><strong>South Africa</strong></td>
+<td align="center">Cuba</td>
+<td align="center">Ghana</td>
+<td align="center">India</td>
+<td align="center">Mexico</td>
+<td align="center">Russian Federation</td>
+<td align="center">South Africa</td>
 <td align="center"><strong>Syrian Arab Republic</strong></td>
-<td align="center"><strong>Thailand</strong></td>
+<td align="center">Thailand</td>
 </tr>
 <tr class="even">
 <td align="center"><strong>Adolescent fertility rate</strong></td>
@@ -490,14 +492,14 @@ pander(combo.matrix)
 </tr>
 <tr class="even">
 <td align="center"><strong>Score</strong></td>
-<td align="center">0.2935</td>
-<td align="center">0.2745</td>
-<td align="center">0.3035</td>
-<td align="center">0.3560</td>
-<td align="center">0.3000</td>
-<td align="center">0.2495</td>
+<td align="center"><strong>0.2935</strong></td>
+<td align="center"><strong>0.2745</strong></td>
+<td align="center"><strong>0.3035</strong></td>
+<td align="center"><strong>0.3560</strong></td>
+<td align="center"><strong>0.3000</strong></td>
+<td align="center"><strong>0.2495</strong></td>
 <td align="center"><strong>0.2020</strong></td>
-<td align="center">0.3820</td>
+<td align="center"><strong>0.3820</strong></td>
 </tr>
 </tbody>
 </table>
