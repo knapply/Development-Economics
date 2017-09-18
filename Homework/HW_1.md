@@ -227,7 +227,6 @@ pander::panderOptions('table.split.table', Inf)
 
 emphasize.strong.cols(which(WBD_norm$`Country Name` == "Syrian Arab Republic",
                             arr.ind = TRUE))
-emphasize.strong.rows(1)
 
 WBD.matrix.t <- WBD_norm %>%
   as.matrix() %>%
@@ -236,7 +235,8 @@ WBD.matrix.t <- WBD_norm %>%
 
 combo.matrix <- rbind(WBD.matrix.t, Score)
 
-emphasize.strong.rows(nrow(combo.matrix))
+# emphasize.strong.rows(1)
+emphasize.strong.rows(c(1, nrow(combo.matrix)))
 ```
 
 Summary Table
@@ -248,27 +248,27 @@ pander(combo.matrix)
 
 <table>
 <colgroup>
-<col width="20%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="8%" />
-<col width="13%" />
-<col width="9%" />
-<col width="16%" />
+<col width="19%" />
 <col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="7%" />
+<col width="14%" />
+<col width="11%" />
+<col width="15%" />
+<col width="8%" />
 </colgroup>
 <tbody>
 <tr class="odd">
 <td align="center"><strong>Country Name</strong></td>
-<td align="center">Cuba</td>
-<td align="center">Ghana</td>
-<td align="center">India</td>
-<td align="center">Mexico</td>
-<td align="center">Russian Federation</td>
-<td align="center">South Africa</td>
+<td align="center"><strong>Cuba</strong></td>
+<td align="center"><strong>Ghana</strong></td>
+<td align="center"><strong>India</strong></td>
+<td align="center"><strong>Mexico</strong></td>
+<td align="center"><strong>Russian Federation</strong></td>
+<td align="center"><strong>South Africa</strong></td>
 <td align="center"><strong>Syrian Arab Republic</strong></td>
-<td align="center">Thailand</td>
+<td align="center"><strong>Thailand</strong></td>
 </tr>
 <tr class="even">
 <td align="center"><strong>Adolescent fertility rate</strong></td>
