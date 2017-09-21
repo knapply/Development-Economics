@@ -650,9 +650,6 @@ index_countries <- combo_norm %>%
 
 nonindex_countries <- map_world %>%
   anti_join(combo_norm, by = c("region" = "Country"))
-
-
-index_map <- NULL
 ```
 
 ``` r
