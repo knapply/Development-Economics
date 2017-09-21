@@ -304,7 +304,7 @@ pander(Score)
 
 The example format that we have seen looks like so:
 
-![Alt text](C:/Users/Windows/Documents/Development-Economics/HW/images/trial_run_screencap.png)
+![Alt text](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/images/trial_run_screencap.png)
 
 To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store in a variable that we'll call `Score`.
 
@@ -354,19 +354,15 @@ pander(Score)
 </tbody>
 </table>
 
-``` r
-# Score <- Score[-1, ]
-```
-
-We're then going to detach the `Country` so that we can bind the `sum` row back to our data.
+We're then going to detach the `Country` row so that we can bind the `sum` row back to our data.
 
 ``` r
 Score <- Score[-1, ]
 
-pander(Score)
+Score
 ```
 
-*6.39*, *2.69*, *3.37*, *5.55*, *6.75*, *4.36*, *2.98* and *5.44*
+    ## [1] "6.39" "2.69" "3.37" "5.55" "6.75" "4.36" "2.98" "5.44"
 
 Data Restructuring
 ------------------
