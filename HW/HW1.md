@@ -238,7 +238,7 @@ By summing our normalized and weighted variables, we create our `Score` data.
 ``` r
 Score <- combo_norm %>%
   group_by(Country) %>%
-  summarise(sum = sum(`Improved water source (% of population with access)`,
+  summarise(Score = sum(`Improved water source (% of population with access)`,
                       `Life expectancy at birth, total (years)`,
                       `Urban population growth (annual %)`,
                       `Adult Literacy Rate (% Ages 15 and older)`,
@@ -247,23 +247,19 @@ Score <- combo_norm %>%
                       `Inequality in education (%)`,
                       `GNI per capita (2011 PPP$)`,
                       `Press Freedom Score (0 worst - 100 best)`))
-```
 
-We then inspect our `Score` data.
-
-``` r
 pander(Score)
 ```
 
-<table style="width:29%;">
+<table style="width:31%;">
 <colgroup>
 <col width="20%" />
-<col width="8%" />
+<col width="9%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">Country</th>
-<th align="center">sum</th>
+<th align="center">Score</th>
 </tr>
 </thead>
 <tbody>
@@ -302,6 +298,76 @@ pander(Score)
 </tbody>
 </table>
 
+With our `Score` data, we can then create our `Rank` data.
+
+``` r
+Score_Rank <- Score %>%
+  mutate(Rank = dense_rank(desc(Score)))
+```
+
+We then inspect our `Score_Rank` data.
+
+``` r
+pander(Score_Rank)
+```
+
+<table style="width:43%;">
+<colgroup>
+<col width="20%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">Score</th>
+<th align="center">Rank</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">6.39</td>
+<td align="center">2</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">2.69</td>
+<td align="center">8</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">3.37</td>
+<td align="center">6</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">5.55</td>
+<td align="center">3</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">6.75</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">4.36</td>
+<td align="center">5</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">2.98</td>
+<td align="center">7</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">5.44</td>
+<td align="center">4</td>
+</tr>
+</tbody>
+</table>
+
 The example format that we have seen looks like so:
 
 ![Alt text](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/images/trial_run_screencap.png)
@@ -309,11 +375,11 @@ The example format that we have seen looks like so:
 To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store it in a variable that we'll call `Score`.
 
 ``` r
-Score <- Score %>%
+Score_Rank <- Score_Rank %>%
   as.matrix() %>%
   t()
 
-pander(Score)
+pander(Score_Rank)
 ```
 
 <table>
@@ -341,7 +407,7 @@ pander(Score)
 <td align="center">Thailand</td>
 </tr>
 <tr class="even">
-<td align="center"><strong>sum</strong></td>
+<td align="center"><strong>Score</strong></td>
 <td align="center">6.39</td>
 <td align="center">2.69</td>
 <td align="center">3.37</td>
@@ -351,18 +417,31 @@ pander(Score)
 <td align="center">2.98</td>
 <td align="center">5.44</td>
 </tr>
+<tr class="odd">
+<td align="center"><strong>Rank</strong></td>
+<td align="center">2</td>
+<td align="center">8</td>
+<td align="center">6</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td align="center">5</td>
+<td align="center">7</td>
+<td align="center">4</td>
+</tr>
 </tbody>
 </table>
 
-We're then going to detach the `Country` row so that we can bind the `sum` row back to our summary table.
+We're then going to detach the `Country` row so that we can bind the `Score` and `Rank` rows to our summary table.
 
 ``` r
-Score <- Score[-1, ]
+Score_Rank <- Score_Rank[-1, ]
 
-Score
+Score_Rank
 ```
 
-    ## [1] "6.39" "2.69" "3.37" "5.55" "6.75" "4.36" "2.98" "5.44"
+    ##       [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]   [,8]  
+    ## Score "6.39" "2.69" "3.37" "5.55" "6.75" "4.36" "2.98" "5.44"
+    ## Rank  "2"    "8"    "6"    "3"    "1"    "5"    "7"    "4"
 
 Data Restructuring
 ------------------
@@ -382,16 +461,16 @@ combo_norm_matr_trans <- combo_norm %>%
   t()
 ```
 
-Next, we bind `combo_norm_matr_trans` to our`Score` data by row and store the result in a variable called `combo_matrix`.
+Next, we bind `Score_Rank` to `combo_norm_matr_trans` by row and store the result in a variable called `combo_matrix`.
 
 ``` r
-combo_matrix <- rbind(combo_norm_matr_trans, Score)
+combo_matrix <- rbind(combo_norm_matr_trans, Score_Rank)
 ```
 
 Before viewing the result, we bold our `Score` row.
 
 ``` r
-emphasize.strong.rows(c(1, nrow(combo_matrix)))
+emphasize.strong.rows(c(1, nrow(combo_matrix), nrow(combo_matrix) - 1))
 ```
 
 Summary Table
@@ -535,6 +614,17 @@ pander(combo_matrix)
 <td align="center"><strong>2.98</strong></td>
 <td align="center"><strong>5.44</strong></td>
 </tr>
+<tr class="even">
+<td align="center"><strong>Rank</strong></td>
+<td align="center"><strong>2</strong></td>
+<td align="center"><strong>8</strong></td>
+<td align="center"><strong>6</strong></td>
+<td align="center"><strong>3</strong></td>
+<td align="center"><strong>1</strong></td>
+<td align="center"><strong>5</strong></td>
+<td align="center"><strong>7</strong></td>
+<td align="center"><strong>4</strong></td>
+</tr>
 </tbody>
 </table>
 
@@ -597,4 +687,4 @@ index_map <- ggplot() +
 index_map
 ```
 
-![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-19-1.png)
+![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-20-1.png)
