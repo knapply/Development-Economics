@@ -467,7 +467,7 @@ Next, we bind `Score_Rank` to `combo_norm_matr_trans` by row and store the resul
 combo_matrix <- rbind(combo_norm_matr_trans, Score_Rank)
 ```
 
-Before viewing the result, we bold our `Score` row.
+Before viewing the result, we bold our `Score` and `Rank` rows.
 
 ``` r
 emphasize.strong.rows(c(1, nrow(combo_matrix), nrow(combo_matrix) - 1))
