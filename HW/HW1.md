@@ -306,7 +306,7 @@ The example format that we have seen looks like so:
 
 ![Alt text](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/images/trial_run_screencap.png)
 
-To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store in a variable that we'll call `Score`.
+To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store it in a variable that we'll call `Score`.
 
 ``` r
 Score <- Score %>%
@@ -354,7 +354,7 @@ pander(Score)
 </tbody>
 </table>
 
-We're then going to detach the `Country` row so that we can bind the `sum` row back to our data.
+We're then going to detach the `Country` row so that we can bind the `sum` row back to our summary table.
 
 ``` r
 Score <- Score[-1, ]
@@ -583,7 +583,14 @@ index_map <- ggplot() +
                        direction = 1) +
   coord_fixed(ratio = 1.5) +
   guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE)) +
-  ggtitle("Development Index")
+  ggtitle("Development Index") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()
+        )
 ```
 
 ``` r
