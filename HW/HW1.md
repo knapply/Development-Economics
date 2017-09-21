@@ -227,7 +227,136 @@ We take our `normalize` and `weight` functions and apply them to our `combo` dat
 ``` r
 combo_norm <- combo %>%
   mutate_if(is.numeric, funs(normalize))
+
+pander(combo_norm)
 ```
+
+<table>
+<colgroup>
+<col width="5%" />
+<col width="10%" />
+<col width="9%" />
+<col width="9%" />
+<col width="11%" />
+<col width="11%" />
+<col width="9%" />
+<col width="10%" />
+<col width="10%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">Improved water source (% of population with access)</th>
+<th align="center">Life expectancy at birth, total (years)</th>
+<th align="center">Urban population growth (annual %)</th>
+<th align="center">Adult Literacy Rate (% Ages 15 and older)</th>
+<th align="center">Population with at least some secondary education (% ages 25 and older)</th>
+<th align="center">Mean years of schooling (years)</th>
+<th align="center">Inequality in education (%)</th>
+<th align="center">GNI per capita (2011 PPP$)</th>
+<th align="center">Press Freedom Score (0 worst - 100 best)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">0.69</td>
+<td align="center">1</td>
+<td align="center">0.47</td>
+<td align="center">1</td>
+<td align="center">0.82</td>
+<td align="center">0.97</td>
+<td align="center">0.23</td>
+<td align="center">0.21</td>
+<td align="center">1</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">0</td>
+<td align="center">0.06</td>
+<td align="center">1</td>
+<td align="center">0.16</td>
+<td align="center">0.38</td>
+<td align="center">0.2</td>
+<td align="center">0.86</td>
+<td align="center">0.03</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">0.64</td>
+<td align="center">0.38</td>
+<td align="center">0.8</td>
+<td align="center">0</td>
+<td align="center">0.18</td>
+<td align="center">0.08</td>
+<td align="center">1</td>
+<td align="center">0.11</td>
+<td align="center">0.18</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">0.83</td>
+<td align="center">0.85</td>
+<td align="center">0.69</td>
+<td align="center">0.81</td>
+<td align="center">0.33</td>
+<td align="center">0.44</td>
+<td align="center">0.44</td>
+<td align="center">0.63</td>
+<td align="center">0.53</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">0.91</td>
+<td align="center">0.53</td>
+<td align="center">0.46</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td align="center">0</td>
+<td align="center">1</td>
+<td align="center">0.85</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">0.51</td>
+<td align="center">0</td>
+<td align="center">0.8</td>
+<td align="center">0.8</td>
+<td align="center">0.65</td>
+<td align="center">0.73</td>
+<td align="center">0.35</td>
+<td align="center">0.44</td>
+<td align="center">0.08</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">0.25</td>
+<td align="center">0.5</td>
+<td align="center">0</td>
+<td align="center">0.52</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.73</td>
+<td align="center">0</td>
+<td align="center">0.98</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">1</td>
+<td align="center">0.75</td>
+<td align="center">0.9</td>
+<td align="center">0.89</td>
+<td align="center">0.08</td>
+<td align="center">0.36</td>
+<td align="center">0.35</td>
+<td align="center">0.53</td>
+<td align="center">0.58</td>
+</tr>
+</tbody>
+</table>
 
 Score
 -----
