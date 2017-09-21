@@ -445,7 +445,7 @@ Score_Rank
 Data Restructuring
 ------------------
 
-In order bold the column for Syria, we use the following:
+In order to bold the column for Syria, we use the following:
 
 ``` r
 emphasize.strong.cols(which(combo_norm$Country == "Syria",
