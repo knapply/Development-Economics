@@ -2,60 +2,206 @@ HW1
 ================
 Team Syria
 
-<style>
-    body .main-container {
-        max-width: 90%;
-    }
-</style>
+-   [Data](#data)
+    -   [Read and Inspect Raw Data](#read-and-inspect-raw-data)
+    -   [Normalize](#normalize)
+        -   [Normalize Formula](#normalize-formula)
+    -   [Weight](#weight)
+    -   [Mutate](#mutate)
+    -   [Score](#score)
+    -   [Data Restructuring](#data-restructuring)
+-   [Summary Table](#summary-table)
+-   [Map](#map)
+
+<!-- <style> -->
+<!--     body .main-container { -->
+<!--         max-width: 90%; -->
+<!--     } -->
+<!-- </style> -->
+Environment Prep
+
 ``` r
-library(googledrive)
+# load packages
 library(tidyverse)
-```
-
-    ## Loading tidyverse: ggplot2
-    ## Loading tidyverse: tibble
-    ## Loading tidyverse: tidyr
-    ## Loading tidyverse: readr
-    ## Loading tidyverse: purrr
-    ## Loading tidyverse: dplyr
-
-    ## Conflicts with tidy packages ----------------------------------------------
-
-    ## filter(): dplyr, stats
-    ## lag():    dplyr, stats
-
-``` r
 library(readxl)
 library(lubridate)
-```
-
-    ## 
-    ## Attaching package: 'lubridate'
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     date
-
-``` r
 library(pander)
-# library(ggmap)
 library(scales)
 ```
 
-    ## 
-    ## Attaching package: 'scales'
+``` r
+# set options so tables render nicely
+pander::panderOptions('table.split.table', Inf)
+```
 
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     discard
+Data
+====
 
-    ## The following object is masked from 'package:readr':
-    ## 
-    ##     col_factor
+Data were retrieved from:
+
+-   [World Bank Data](https://data.worldbank.org)
+    -   Improved water source (% of population with access)
+    -   Life expectancy at birth, total (years)
+    -   Urban population growth (annual %)
+-   [UNDP Human Development Reports](http://hdr.undp.org/en/data)
+    -   Adult Literacy Rate (% Ages 15 and older)
+    -   Population with at least some secondary education (% ages 25 and older)
+    -   Mean years of schooling (years)
+    -   Inequality in education (%)
+    -   GNI per capita (2011 PPP$)
+
+Read and Inspect Raw Data
+-------------------------
+
+We read the excel file containing our raw data and store it in a `data_frame` variable named `combo`.
 
 ``` r
 combo <- read_excel("~/Development-Economics/data/combo.xlsx")
 ```
+
+We then inspect our `combo` data.
+
+``` r
+pander(combo)
+```
+
+<table>
+<colgroup>
+<col width="5%" />
+<col width="10%" />
+<col width="9%" />
+<col width="9%" />
+<col width="11%" />
+<col width="11%" />
+<col width="9%" />
+<col width="10%" />
+<col width="10%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">Improved water source (% of population with access)</th>
+<th align="center">Life expectancy at birth, total (years)</th>
+<th align="center">Urban population growth (annual %)</th>
+<th align="center">Adult Literacy Rate (% Ages 15 and older)</th>
+<th align="center">Population with at least some secondary education (% ages 25 and older)</th>
+<th align="center">Mean years of schooling (years)</th>
+<th align="center">Inequality in education (%)</th>
+<th align="center">GNI per capita (2011 PPP$)</th>
+<th align="center">Press Freedom Score (0 worst - 100 best)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">94.6</td>
+<td align="center">79.39</td>
+<td align="center">0.369</td>
+<td align="center">99.7</td>
+<td align="center">84.8</td>
+<td align="center">11.8</td>
+<td align="center">11.3</td>
+<td align="center">7280</td>
+<td align="center">90</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">87.6</td>
+<td align="center">62.11</td>
+<td align="center">3.55</td>
+<td align="center">76.6</td>
+<td align="center">59.8</td>
+<td align="center">6.9</td>
+<td align="center">36.7</td>
+<td align="center">3472</td>
+<td align="center">28</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">94.1</td>
+<td align="center">68.05</td>
+<td align="center">2.345</td>
+<td align="center">72.1</td>
+<td align="center">48.7</td>
+<td align="center">6.1</td>
+<td align="center">42.1</td>
+<td align="center">5329</td>
+<td align="center">39</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">96.1</td>
+<td align="center">76.7</td>
+<td align="center">1.721</td>
+<td align="center">94.4</td>
+<td align="center">57.4</td>
+<td align="center">8.4</td>
+<td align="center">19.7</td>
+<td align="center">16154</td>
+<td align="center">61</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">96.9</td>
+<td align="center">70.74</td>
+<td align="center">0.3165</td>
+<td align="center">99.7</td>
+<td align="center">94.6</td>
+<td align="center">12</td>
+<td align="center">2.3</td>
+<td align="center">24067</td>
+<td align="center">81</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">92.8</td>
+<td align="center">60.95</td>
+<td align="center">2.35</td>
+<td align="center">94.3</td>
+<td align="center">74.9</td>
+<td align="center">10.3</td>
+<td align="center">16.1</td>
+<td align="center">12113</td>
+<td align="center">33</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">90.1</td>
+<td align="center">70.16</td>
+<td align="center">-2.406</td>
+<td align="center">86.4</td>
+<td align="center">38.9</td>
+<td align="center">5.6</td>
+<td align="center">31.5</td>
+<td align="center">2905</td>
+<td align="center">89</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">97.8</td>
+<td align="center">74.86</td>
+<td align="center">2.936</td>
+<td align="center">96.7</td>
+<td align="center">43.3</td>
+<td align="center">7.9</td>
+<td align="center">16.1</td>
+<td align="center">14169</td>
+<td align="center">64</td>
+</tr>
+</tbody>
+</table>
+
+Normalize
+---------
+
+### Normalize Formula
+
+In order to normalize our values to a `0` to `1` scale, we use the following formula:
+
+> Normalization Process: Divide (cardinal number – minimum) by (maximum – minimum)
+
+We create a function called `normalize` to achieve this result, which also rounds our values to 2 digits following the decimal point.
 
 ``` r
 normalize <- function(x){
@@ -63,16 +209,31 @@ normalize <- function(x){
 }
 ```
 
+Weight
+------
+
+We also create a function to weight our variables, simply called `weight`.
+
 ``` r
-# weight_negatively <- function(x){
+# weight <- function(x){
   # x <- x * -1
 # }
 ```
+
+Mutate
+------
+
+We take our `normalize` and `weight` functions and apply them to our `combo` data, and store the results in a new `data_frame` called `normalize_weighted`. Since `Country` is a non-numeric column, `mutate_if` allows us to only apply our functions to columns where `is.numeric()` returns `TRUE`.
 
 ``` r
 combo_norm <- combo %>%
   mutate_if(is.numeric, funs(normalize))
 ```
+
+Score
+-----
+
+By summing our normalized and weighted variables, we create our `Score` data.
 
 ``` r
 Score <- combo_norm %>%
@@ -85,29 +246,160 @@ Score <- combo_norm %>%
                       `Mean years of schooling (years)`,
                       `Inequality in education (%)`,
                       `GNI per capita (2011 PPP$)`,
-                      `Press Freedom Score (0 worst - 100 best)`)) %>%
+                      `Press Freedom Score (0 worst - 100 best)`))
+```
+
+We then inspect our `Score` data.
+
+``` r
+pander(Score)
+```
+
+<table style="width:29%;">
+<colgroup>
+<col width="20%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">sum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">6.39</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">2.69</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">3.37</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">5.55</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">6.75</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">4.36</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">2.98</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">5.44</td>
+</tr>
+</tbody>
+</table>
+
+The example format that we have seen looks like so:
+
+![Alt text](C:/Users/Windows/Documents/Development-Economics/HW/images/trial_run_screencap.png)
+
+To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store in a variable that we'll call `Score`.
+
+``` r
+Score <- Score %>%
   as.matrix() %>%
   t()
 
-Score <- Score[-1,]
+pander(Score)
 ```
+
+<table>
+<colgroup>
+<col width="15%" />
+<col width="7%" />
+<col width="9%" />
+<col width="9%" />
+<col width="10%" />
+<col width="10%" />
+<col width="17%" />
+<col width="9%" />
+<col width="11%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Country</strong></td>
+<td align="center">Cuba</td>
+<td align="center">Ghana</td>
+<td align="center">India</td>
+<td align="center">Mexico</td>
+<td align="center">Russia</td>
+<td align="center">South Africa</td>
+<td align="center">Syria</td>
+<td align="center">Thailand</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>sum</strong></td>
+<td align="center">6.39</td>
+<td align="center">2.69</td>
+<td align="center">3.37</td>
+<td align="center">5.55</td>
+<td align="center">6.75</td>
+<td align="center">4.36</td>
+<td align="center">2.98</td>
+<td align="center">5.44</td>
+</tr>
+</tbody>
+</table>
 
 ``` r
-pander::panderOptions('table.split.table', Inf)
+# Score <- Score[-1, ]
+```
 
+We're then going to detach the `Country` so that we can bind the `sum` row back to our data.
+
+``` r
+Score <- Score[-1, ]
+
+pander(Score)
+```
+
+*6.39*, *2.69*, *3.37*, *5.55*, *6.75*, *4.36*, *2.98* and *5.44*
+
+Data Restructuring
+------------------
+
+In order bold the column for Syria, we use the following:
+
+``` r
 emphasize.strong.cols(which(combo_norm$Country == "Syria",
                             arr.ind = TRUE))
+```
 
+To produce the desired table, we convert our `combo_norm` variable to a matrix, which we then transpose and store in a variable called `combo_norm_matr_trans`.
+
+``` r
 combo_norm_matr_trans <- combo_norm %>%
   as.matrix() %>%
-  t() %>%
-  na.omit() 
+  t()
+```
 
+Next, we bind `combo_norm_matr_trans` to our`Score` data by row and store the result in a variable called `combo_matrix`.
+
+``` r
 combo_matrix <- rbind(combo_norm_matr_trans, Score)
+```
 
-# emphasize.strong.rows(1)
+Before viewing the result, we bold our `Score` row.
+
+``` r
 emphasize.strong.rows(c(1, nrow(combo_matrix)))
 ```
+
+Summary Table
+=============
 
 ``` r
 pander(combo_matrix)
@@ -250,29 +542,13 @@ pander(combo_matrix)
 </tbody>
 </table>
 
+Map
+===
+
+To faciliate understanding the data, we can visualize it with a map.
+
 ``` r
 map_world <- map_data(map = "world")
-```
-
-    ## 
-    ## Attaching package: 'maps'
-
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     map
-
-``` r
-# Score <- combo_norm %>%
-#   group_by(Country) %>%
-#   summarise(sum = sum(`Improved water source (% of population with access)`,
-#                       `Life expectancy at birth, total (years)`,
-#                       `Urban population growth (annual %)`,
-#                       `Adult Literacy Rate (% Ages 15 and older)`,
-#                       `Population with at least some secondary education (% ages 25 and older)`,
-#                       `Mean years of schooling (years)`,
-#                       `Inequality in education (%)`,
-#                       `GNI per capita (2011 PPP$)`,
-#                       `Press Freedom Score (0 worst - 100 best)`))
 
 index_countries <- combo_norm %>%
   group_by(Country) %>%
@@ -299,11 +575,9 @@ index_map <- ggplot() +
   geom_polygon(data = index_countries,
                aes(x = long, y = lat,
                    group = group,
-                   # fill = total_map$`Press Freedom Score (0 worst - 100 best)`),
                    fill = `Index Sum`),  size = 0.01) +
   geom_polygon(data = nonindex_countries,
                aes(x = long, y = lat, group = group),
-               # alpha = 0.1,
                fill = "white",
                size = 0.1) +
   coord_map() +
@@ -312,11 +586,12 @@ index_map <- ggplot() +
                        breaks = pretty_breaks(n=10), 
                        direction = 1) +
   coord_fixed(ratio = 1.5) +
-  guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE))
+  guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE)) +
+  ggtitle("Development Index")
 ```
 
 ``` r
 index_map
 ```
 
-![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-1.png)
+![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-19-1.png)
