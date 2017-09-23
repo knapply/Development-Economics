@@ -1,4 +1,4 @@
-# Development-Economics
-Class project
+Development-Economics
 
-[Constructing a Development Index: Data Wrangling Walkthrough](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/HW1.md)
+#Reports
+[Constructing a Development Index](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/HW1.md)

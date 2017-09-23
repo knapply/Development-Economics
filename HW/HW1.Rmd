@@ -1,6 +1,6 @@
 ---
-title: "Homework 1: Data Wrangling Walkthrough"
-author: "Team Syria"
+title: "Constructing a Development Index"
+author: "Brendan Knapp"
 
 
 output:
