@@ -7,23 +7,23 @@ author: "Team Syria"
 #     toc: yes
 # toc_float: yes
 
-output:
-  html_document:
-    toc: yes
+# output:
+#   html_document:
+#     toc: yes
 
-# # output:
-#   # rmarkdown::github_document:
-#   #   toc: yes
-#     
+output:
+rmarkdown::github_document:
+  toc: yes
+
 # output: word_document
 
 ---
 
-<style>
-    body .main-container {
-        max-width: 90%;
-    }
-</style>
+<!-- <style> -->
+<!--     body .main-container { -->
+<!--         max-width: 90%; -->
+<!--     } -->
+<!-- </style> -->
 
 Environment Prep
 ```{r message=FALSE, warning=FALSE}
