@@ -5,25 +5,25 @@ author: "Team Syria"
 # output:
 #   html_notebook:
 #     toc: yes
-#     toc_float: yes
-
-# output:
-#   html_document:
-#     toc: yes
+# toc_float: yes
 
 output:
-  rmarkdown::github_document:
+  html_document:
     toc: yes
-    
+
+# # output:
+#   # rmarkdown::github_document:
+#   #   toc: yes
+#     
 # output: word_document
 
 ---
 
-<!-- <style> -->
-<!--     body .main-container { -->
-<!--         max-width: 90%; -->
-<!--     } -->
-<!-- </style> -->
+<style>
+    body .main-container {
+        max-width: 90%;
+    }
+</style>
 
 Environment Prep
 ```{r message=FALSE, warning=FALSE}
@@ -106,6 +106,7 @@ pander(combo_norm)
 We decided to combine our education variables by taking their `mean` and assigning it to a new variable called `Combined Education`.
 ```{r}
 combo_norm_comb_ed <- combo_norm %>%
+  group_by(Country) %>%
   mutate(`Combined Education` = mean(c(`Population with at least some secondary education (% ages 25 and older)`, `Mean years of schooling (years)`, `Adult Literacy`))) %>%
   select(-`Population with at least some secondary education (% ages 25 and older)`,
          -`Mean years of schooling (years)`,
@@ -143,7 +144,7 @@ In order to weight our data, we multiply each column by the appropriate weight v
 ```{r}
 combo_weighted <- combo_norm_comb_ed %>%
   mutate(`Water Access` = `Water Access` * water_wt,
-         `Life Expectany` = `Life Expectancy` * life_expect_wt,
+         `Life Expectancy` = `Life Expectancy` * life_expect_wt,
          `Urban Population` = `Urban Population` * urban_wt,
          `GNI per Capita` = `GNI per Capita` * GNI_wt,
          `Press Freedom` = `Press Freedom` * press_freedom_wt,
@@ -160,12 +161,12 @@ By `sum`ming our normalized and weighted variables, we create our `Score` data. 
 ```{r}
 Score <- combo_weighted %>%
   group_by(Country) %>%
-  summarise(Score = round(sum(`Water Access`,
-                              `Life Expectany`,
-                              `Urban Population`,
-                              `GNI per Capita`,
-                              `Press Freedom`,
-                              `Combined Education`), digits = 2))
+  summarise(Score = sum(`Water Access`,
+                        `Life Expectancy`,
+                        `Urban Population`,
+                        `GNI per Capita`,
+                        `Press Freedom`,
+                        `Combined Education`))
 
 pander(Score)
 
@@ -182,7 +183,7 @@ pander(Score_Rank)
 
 The example format that we have seen looks like so:
 
-![Alt text](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/images/trial_run_screencap.png)
+![](https://i.imgur.com/DGKubdQ.png)
 
 To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store it in a variable that we'll call `Score`.
 
@@ -190,7 +191,6 @@ To match this we need to convert our `data_frame` to a `matrix`, transpose the d
 Score_Rank <- Score_Rank %>%
   as.matrix() %>%
   t()
-
 
 pander(Score_Rank)
 
@@ -200,18 +200,12 @@ We're then going to detach the `Country` row so that we can bind the `Score` and
 ```{r}
 Score_Rank <- Score_Rank[-1, ]
 
-Score_Rank
+pander(Score_Rank)
 
 ```
 
 
 ##Data Restructuring
-<!-- In order to bold the column for Syria, we use the following: -->
-<!-- ```{r} -->
-<!-- emphasize.strong.cols(which(combo_weighted$Country == "Syria", -->
-<!--                             arr.ind = TRUE)) -->
-
-<!-- ``` -->
 
 To produce the desired table, we convert our `combo_norm` variable to a matrix, which we then transpose and store in a variable called `combo_norm_matr_trans`.
 ```{r}
