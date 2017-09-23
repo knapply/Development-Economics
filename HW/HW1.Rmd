@@ -2,6 +2,12 @@
 title: "Homework 1: Data Wrangling Walkthrough"
 author: "Team Syria"
 
+
+output:
+  github_document:
+    toc: yes
+  
+  
 # output:
 #   html_notebook:
 #     toc: yes
@@ -10,10 +16,6 @@ author: "Team Syria"
 # output:
 #   html_document:
 #     toc: yes
-
-output:
-rmarkdown::github_document:
-  toc: yes
 
 # output: word_document
 
