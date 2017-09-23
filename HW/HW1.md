@@ -1,4 +1,4 @@
-HW1
+Homework 1: Data Wrangling Walkthrough
 ================
 Team Syria
 
@@ -7,8 +7,8 @@ Team Syria
     -   [Normalize](#normalize)
         -   [Normalize Formula](#normalize-formula)
     -   [Mutate](#mutate)
-    -   [Combine Education Variables](#combine-education-variables)
-    -   [Weights](#weights)
+        -   [Combine Education Variables](#combine-education-variables)
+    -   [Weight](#weight)
     -   [Score](#score)
     -   [Data Restructuring](#data-restructuring)
 -   [Summary Table](#summary-table)
@@ -331,8 +331,7 @@ pander(combo_norm)
 </tbody>
 </table>
 
-Combine Education Variables
----------------------------
+### Combine Education Variables
 
 We decided to combine our education variables by taking their `mean` and assigning it to a new variable called `Combined Education`.
 
@@ -443,10 +442,12 @@ pander(combo_norm_comb_ed)
 </tbody>
 </table>
 
-Weights
--------
+Weight
+------
 
-We decided on the following weighting scheme for our data, which we assign to individual variables. To ensure that we're weighting correctly, we also check that our weight `sum` tto `1`.
+We decided on the following weighting scheme for our data: \* Water: 0.30 \* Education: 0.25 \* GNI per Capita: 0.18 \* Urban Population: 0.12 \* Press Freedom: 0.09 \* Life Expectancy: 0.06
+
+We assign our weights to individual variables before using them. To ensure that we're weighting correctly, we also check that our weight `sum` to `1`.
 
 ``` r
 water_wt <- 0.30
