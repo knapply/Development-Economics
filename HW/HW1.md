@@ -1,6 +1,6 @@
-Homework 1: Data Wrangling Walkthrough
+Constructing a Development Index
 ================
-Team Syria
+Brendan Knapp
 
 -   [Data](#data)
     -   [Read and Inspect Raw Data](#read-and-inspect-raw-data)
