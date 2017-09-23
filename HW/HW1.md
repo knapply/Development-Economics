@@ -6,8 +6,9 @@ Team Syria
     -   [Read and Inspect Raw Data](#read-and-inspect-raw-data)
     -   [Normalize](#normalize)
         -   [Normalize Formula](#normalize-formula)
-    -   [Weight](#weight)
     -   [Mutate](#mutate)
+    -   [Combine Education Variables](#combine-education-variables)
+    -   [Weights](#weights)
     -   [Score](#score)
     -   [Data Restructuring](#data-restructuring)
 -   [Summary Table](#summary-table)
@@ -56,37 +57,31 @@ We read the excel file containing our raw data and store it in a `data_frame` va
 
 ``` r
 combo <- read_excel("~/Development-Economics/data/combo.xlsx")
-```
 
-We then inspect our `combo` data.
-
-``` r
 pander(combo)
 ```
 
 <table>
 <colgroup>
-<col width="5%" />
-<col width="10%" />
-<col width="9%" />
-<col width="9%" />
+<col width="6%" />
+<col width="12%" />
 <col width="11%" />
-<col width="11%" />
-<col width="9%" />
-<col width="10%" />
+<col width="8%" />
+<col width="13%" />
+<col width="13%" />
 <col width="10%" />
 <col width="11%" />
+<col width="12%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">Country</th>
 <th align="center">Improved water source (% of population with access)</th>
 <th align="center">Life expectancy at birth, total (years)</th>
-<th align="center">Urban population growth (annual %)</th>
+<th align="center">Urban population %</th>
 <th align="center">Adult Literacy Rate (% Ages 15 and older)</th>
 <th align="center">Population with at least some secondary education (% ages 25 and older)</th>
 <th align="center">Mean years of schooling (years)</th>
-<th align="center">Inequality in education (%)</th>
 <th align="center">GNI per capita (2011 PPP$)</th>
 <th align="center">Press Freedom Score (0 worst - 100 best)</th>
 </tr>
@@ -96,11 +91,10 @@ pander(combo)
 <td align="center">Cuba</td>
 <td align="center">94.6</td>
 <td align="center">79.39</td>
-<td align="center">0.369</td>
+<td align="center">77</td>
 <td align="center">99.7</td>
 <td align="center">84.8</td>
 <td align="center">11.8</td>
-<td align="center">11.3</td>
 <td align="center">7280</td>
 <td align="center">90</td>
 </tr>
@@ -108,11 +102,10 @@ pander(combo)
 <td align="center">Ghana</td>
 <td align="center">87.6</td>
 <td align="center">62.11</td>
-<td align="center">3.55</td>
+<td align="center">55</td>
 <td align="center">76.6</td>
 <td align="center">59.8</td>
 <td align="center">6.9</td>
-<td align="center">36.7</td>
 <td align="center">3472</td>
 <td align="center">28</td>
 </tr>
@@ -120,11 +113,10 @@ pander(combo)
 <td align="center">India</td>
 <td align="center">94.1</td>
 <td align="center">68.05</td>
-<td align="center">2.345</td>
+<td align="center">33</td>
 <td align="center">72.1</td>
 <td align="center">48.7</td>
 <td align="center">6.1</td>
-<td align="center">42.1</td>
 <td align="center">5329</td>
 <td align="center">39</td>
 </tr>
@@ -132,11 +124,10 @@ pander(combo)
 <td align="center">Mexico</td>
 <td align="center">96.1</td>
 <td align="center">76.7</td>
-<td align="center">1.721</td>
+<td align="center">80</td>
 <td align="center">94.4</td>
 <td align="center">57.4</td>
 <td align="center">8.4</td>
-<td align="center">19.7</td>
 <td align="center">16154</td>
 <td align="center">61</td>
 </tr>
@@ -144,11 +135,10 @@ pander(combo)
 <td align="center">Russia</td>
 <td align="center">96.9</td>
 <td align="center">70.74</td>
-<td align="center">0.3165</td>
+<td align="center">74</td>
 <td align="center">99.7</td>
 <td align="center">94.6</td>
 <td align="center">12</td>
-<td align="center">2.3</td>
 <td align="center">24067</td>
 <td align="center">81</td>
 </tr>
@@ -156,11 +146,10 @@ pander(combo)
 <td align="center">South Africa</td>
 <td align="center">92.8</td>
 <td align="center">60.95</td>
-<td align="center">2.35</td>
+<td align="center">65</td>
 <td align="center">94.3</td>
 <td align="center">74.9</td>
 <td align="center">10.3</td>
-<td align="center">16.1</td>
 <td align="center">12113</td>
 <td align="center">33</td>
 </tr>
@@ -168,11 +157,10 @@ pander(combo)
 <td align="center">Syria</td>
 <td align="center">90.1</td>
 <td align="center">70.16</td>
-<td align="center">-2.406</td>
+<td align="center">58</td>
 <td align="center">86.4</td>
 <td align="center">38.9</td>
 <td align="center">5.6</td>
-<td align="center">31.5</td>
 <td align="center">2905</td>
 <td align="center">89</td>
 </tr>
@@ -180,11 +168,10 @@ pander(combo)
 <td align="center">Thailand</td>
 <td align="center">97.8</td>
 <td align="center">74.86</td>
-<td align="center">2.936</td>
+<td align="center">52</td>
 <td align="center">96.7</td>
 <td align="center">43.3</td>
 <td align="center">7.9</td>
-<td align="center">16.1</td>
 <td align="center">14169</td>
 <td align="center">64</td>
 </tr>
@@ -198,162 +185,402 @@ Normalize
 
 In order to normalize our values to a `0` to `1` scale, we use the following formula:
 
-> Normalization Process: Divide (cardinal number – minimum) by (maximum – minimum)
+> Divide (cardinal number – minimum) by (maximum – minimum)
 
-We create a function called `normalize` to achieve this result, which also rounds our values to 2 digits following the decimal point.
+We create a function called `normalize` to achieve this result.
 
 ``` r
 normalize <- function(x){
-  round((x - min(x)) / (max(x) - min(x)), digits = 2)
+  (x - min(x)) / (max(x) - min(x))
 }
-```
-
-Weight
-------
-
-We also create a function to weight our variables, simply called `weight`.
-
-``` r
-# weight <- function(x){
-  # x <- x * -1
-# }
 ```
 
 Mutate
 ------
 
-We take our `normalize` and `weight` functions and apply them to our `combo` data, and store the results in a new `data_frame` called `normalize_weighted`. Since `Country` is a non-numeric column, `mutate_if` allows us to only apply our functions to columns where `is.numeric()` returns `TRUE`.
+We take our `normalize()` function, apply it to our `combo` data, and store the results in a new `data_frame` called `combo_norm`. Since `Country` is a non-numeric column, `mutate_if` allows us to only apply our functions to columns where `is.numeric()` returns `TRUE`. We also rename our variables to simplify our table and drop any scale references.
 
 ``` r
 combo_norm <- combo %>%
-  mutate_if(is.numeric, funs(normalize))
+  mutate_if(is.numeric, funs(normalize)) %>%
+  rename(`Press Freedom` = `Press Freedom Score (0 worst - 100 best)`,
+         `Water Access` = `Improved water source (% of population with access)`,
+         `Life Expectancy` = `Life expectancy at birth, total (years)`,
+         `Urban Population` = `Urban population %`,
+         `Adult Literacy` = `Adult Literacy Rate (% Ages 15 and older)`,
+         `GNI per Capita` = `GNI per capita (2011 PPP$)`
+         )
 
 pander(combo_norm)
 ```
 
 <table>
 <colgroup>
-<col width="5%" />
-<col width="10%" />
-<col width="9%" />
-<col width="9%" />
-<col width="11%" />
-<col width="11%" />
-<col width="9%" />
+<col width="8%" />
+<col width="8%" />
 <col width="10%" />
 <col width="10%" />
-<col width="11%" />
+<col width="9%" />
+<col width="18%" />
+<col width="14%" />
+<col width="9%" />
+<col width="9%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th align="center">Country</th>
-<th align="center">Improved water source (% of population with access)</th>
-<th align="center">Life expectancy at birth, total (years)</th>
-<th align="center">Urban population growth (annual %)</th>
-<th align="center">Adult Literacy Rate (% Ages 15 and older)</th>
+<th align="center">Water Access</th>
+<th align="center">Life Expectancy</th>
+<th align="center">Urban Population</th>
+<th align="center">Adult Literacy</th>
 <th align="center">Population with at least some secondary education (% ages 25 and older)</th>
 <th align="center">Mean years of schooling (years)</th>
-<th align="center">Inequality in education (%)</th>
-<th align="center">GNI per capita (2011 PPP$)</th>
-<th align="center">Press Freedom Score (0 worst - 100 best)</th>
+<th align="center">GNI per Capita</th>
+<th align="center">Press Freedom</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td align="center">Cuba</td>
-<td align="center">0.69</td>
+<td align="center">0.6863</td>
 <td align="center">1</td>
-<td align="center">0.47</td>
+<td align="center">0.9362</td>
 <td align="center">1</td>
-<td align="center">0.82</td>
-<td align="center">0.97</td>
-<td align="center">0.23</td>
-<td align="center">0.21</td>
+<td align="center">0.8241</td>
+<td align="center">0.9688</td>
+<td align="center">0.2067</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
 <td align="center">Ghana</td>
 <td align="center">0</td>
-<td align="center">0.06</td>
-<td align="center">1</td>
-<td align="center">0.16</td>
-<td align="center">0.38</td>
-<td align="center">0.2</td>
-<td align="center">0.86</td>
-<td align="center">0.03</td>
+<td align="center">0.06287</td>
+<td align="center">0.4681</td>
+<td align="center">0.163</td>
+<td align="center">0.3752</td>
+<td align="center">0.2031</td>
+<td align="center">0.02679</td>
 <td align="center">0</td>
 </tr>
 <tr class="odd">
 <td align="center">India</td>
-<td align="center">0.64</td>
-<td align="center">0.38</td>
-<td align="center">0.8</td>
+<td align="center">0.6373</td>
+<td align="center">0.3849</td>
 <td align="center">0</td>
-<td align="center">0.18</td>
-<td align="center">0.08</td>
-<td align="center">1</td>
-<td align="center">0.11</td>
-<td align="center">0.18</td>
+<td align="center">0</td>
+<td align="center">0.1759</td>
+<td align="center">0.07812</td>
+<td align="center">0.1145</td>
+<td align="center">0.1774</td>
 </tr>
 <tr class="even">
 <td align="center">Mexico</td>
-<td align="center">0.83</td>
-<td align="center">0.85</td>
-<td align="center">0.69</td>
-<td align="center">0.81</td>
-<td align="center">0.33</td>
-<td align="center">0.44</td>
-<td align="center">0.44</td>
-<td align="center">0.63</td>
-<td align="center">0.53</td>
+<td align="center">0.8333</td>
+<td align="center">0.8541</td>
+<td align="center">1</td>
+<td align="center">0.808</td>
+<td align="center">0.3321</td>
+<td align="center">0.4375</td>
+<td align="center">0.6261</td>
+<td align="center">0.5323</td>
 </tr>
 <tr class="odd">
 <td align="center">Russia</td>
-<td align="center">0.91</td>
-<td align="center">0.53</td>
-<td align="center">0.46</td>
+<td align="center">0.9118</td>
+<td align="center">0.531</td>
+<td align="center">0.8723</td>
 <td align="center">1</td>
 <td align="center">1</td>
 <td align="center">1</td>
-<td align="center">0</td>
 <td align="center">1</td>
-<td align="center">0.85</td>
+<td align="center">0.8548</td>
 </tr>
 <tr class="even">
 <td align="center">South Africa</td>
-<td align="center">0.51</td>
+<td align="center">0.5098</td>
 <td align="center">0</td>
-<td align="center">0.8</td>
-<td align="center">0.8</td>
-<td align="center">0.65</td>
-<td align="center">0.73</td>
-<td align="center">0.35</td>
-<td align="center">0.44</td>
-<td align="center">0.08</td>
+<td align="center">0.6809</td>
+<td align="center">0.8043</td>
+<td align="center">0.6463</td>
+<td align="center">0.7344</td>
+<td align="center">0.4351</td>
+<td align="center">0.08065</td>
 </tr>
 <tr class="odd">
 <td align="center">Syria</td>
-<td align="center">0.25</td>
-<td align="center">0.5</td>
+<td align="center">0.2451</td>
+<td align="center">0.4995</td>
+<td align="center">0.5319</td>
+<td align="center">0.5181</td>
 <td align="center">0</td>
-<td align="center">0.52</td>
 <td align="center">0</td>
 <td align="center">0</td>
-<td align="center">0.73</td>
-<td align="center">0</td>
-<td align="center">0.98</td>
+<td align="center">0.9839</td>
 </tr>
 <tr class="even">
 <td align="center">Thailand</td>
 <td align="center">1</td>
-<td align="center">0.75</td>
-<td align="center">0.9</td>
-<td align="center">0.89</td>
-<td align="center">0.08</td>
-<td align="center">0.36</td>
-<td align="center">0.35</td>
+<td align="center">0.7545</td>
+<td align="center">0.4043</td>
+<td align="center">0.8913</td>
+<td align="center">0.07899</td>
+<td align="center">0.3594</td>
+<td align="center">0.5323</td>
+<td align="center">0.5806</td>
+</tr>
+</tbody>
+</table>
+
+Combine Education Variables
+---------------------------
+
+We decided to combine our education variables by taking their `mean` and assigning it to a new variable called `Combined Education`.
+
+``` r
+combo_norm_comb_ed <- combo_norm %>%
+  mutate(`Combined Education` = mean(c(`Population with at least some secondary education (% ages 25 and older)`, `Mean years of schooling (years)`, `Adult Literacy`))) %>%
+  select(-`Population with at least some secondary education (% ages 25 and older)`,
+         -`Mean years of schooling (years)`,
+         -`Adult Literacy`)
+
+pander(combo_norm_comb_ed)
+```
+
+<table style="width:100%;">
+<colgroup>
+<col width="12%" />
+<col width="12%" />
+<col width="15%" />
+<col width="15%" />
+<col width="14%" />
+<col width="13%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">Water Access</th>
+<th align="center">Life Expectancy</th>
+<th align="center">Urban Population</th>
+<th align="center">GNI per Capita</th>
+<th align="center">Press Freedom</th>
+<th align="center">Combined Education</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">0.6863</td>
+<td align="center">1</td>
+<td align="center">0.9362</td>
+<td align="center">0.2067</td>
+<td align="center">1</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">0</td>
+<td align="center">0.06287</td>
+<td align="center">0.4681</td>
+<td align="center">0.02679</td>
+<td align="center">0</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">0.6373</td>
+<td align="center">0.3849</td>
+<td align="center">0</td>
+<td align="center">0.1145</td>
+<td align="center">0.1774</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">0.8333</td>
+<td align="center">0.8541</td>
+<td align="center">1</td>
+<td align="center">0.6261</td>
+<td align="center">0.5323</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">0.9118</td>
+<td align="center">0.531</td>
+<td align="center">0.8723</td>
+<td align="center">1</td>
+<td align="center">0.8548</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">0.5098</td>
+<td align="center">0</td>
+<td align="center">0.6809</td>
+<td align="center">0.4351</td>
+<td align="center">0.08065</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">0.2451</td>
+<td align="center">0.4995</td>
+<td align="center">0.5319</td>
+<td align="center">0</td>
+<td align="center">0.9839</td>
+<td align="center">0.5166</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">1</td>
+<td align="center">0.7545</td>
+<td align="center">0.4043</td>
+<td align="center">0.5323</td>
+<td align="center">0.5806</td>
+<td align="center">0.5166</td>
+</tr>
+</tbody>
+</table>
+
+Weights
+-------
+
+We decided on the following weighting scheme for our data, which we assign to individual variables. To ensure that we're weighting correctly, we also check that our weight `sum` tto `1`.
+
+``` r
+water_wt <- 0.30
+education_wt <- 0.25
+GNI_wt <- 0.18
+urban_wt <- 0.12
+press_freedom_wt <- 0.09
+life_expect_wt <- 0.06
+
+weights <- c(water_wt, education_wt, GNI_wt, urban_wt, press_freedom_wt, life_expect_wt)
+
+sum(weights) == 1
+```
+
+    ## [1] TRUE
+
+In order to weight our data, we multiply each column by the appropriate weight variable. At this point, we also `round` our data to `2` digits following the decimal point.
+
+``` r
+combo_weighted <- combo_norm_comb_ed %>%
+  mutate(`Water Access` = `Water Access` * water_wt,
+         `Life Expectany` = `Life Expectancy` * life_expect_wt,
+         `Urban Population` = `Urban Population` * urban_wt,
+         `GNI per Capita` = `GNI per Capita` * GNI_wt,
+         `Press Freedom` = `Press Freedom` * press_freedom_wt,
+         `Combined Education` = `Combined Education` * education_wt) %>%
+  mutate_if(is.numeric, funs(round(., digits = 2)))
+
+pander(combo_weighted)
+```
+
+<table>
+<colgroup>
+<col width="10%" />
+<col width="10%" />
+<col width="13%" />
+<col width="13%" />
+<col width="12%" />
+<col width="11%" />
+<col width="15%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Country</th>
+<th align="center">Water Access</th>
+<th align="center">Life Expectancy</th>
+<th align="center">Urban Population</th>
+<th align="center">GNI per Capita</th>
+<th align="center">Press Freedom</th>
+<th align="center">Combined Education</th>
+<th align="center">Life Expectany</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Cuba</td>
+<td align="center">0.21</td>
+<td align="center">1</td>
+<td align="center">0.11</td>
+<td align="center">0.04</td>
+<td align="center">0.09</td>
+<td align="center">0.13</td>
+<td align="center">0.06</td>
+</tr>
+<tr class="even">
+<td align="center">Ghana</td>
+<td align="center">0</td>
+<td align="center">0.06</td>
+<td align="center">0.06</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td align="center">0.13</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">India</td>
+<td align="center">0.19</td>
+<td align="center">0.38</td>
+<td align="center">0</td>
+<td align="center">0.02</td>
+<td align="center">0.02</td>
+<td align="center">0.13</td>
+<td align="center">0.02</td>
+</tr>
+<tr class="even">
+<td align="center">Mexico</td>
+<td align="center">0.25</td>
+<td align="center">0.85</td>
+<td align="center">0.12</td>
+<td align="center">0.11</td>
+<td align="center">0.05</td>
+<td align="center">0.13</td>
+<td align="center">0.05</td>
+</tr>
+<tr class="odd">
+<td align="center">Russia</td>
+<td align="center">0.27</td>
 <td align="center">0.53</td>
-<td align="center">0.58</td>
+<td align="center">0.1</td>
+<td align="center">0.18</td>
+<td align="center">0.08</td>
+<td align="center">0.13</td>
+<td align="center">0.03</td>
+</tr>
+<tr class="even">
+<td align="center">South Africa</td>
+<td align="center">0.15</td>
+<td align="center">0</td>
+<td align="center">0.08</td>
+<td align="center">0.08</td>
+<td align="center">0.01</td>
+<td align="center">0.13</td>
+<td align="center">0</td>
+</tr>
+<tr class="odd">
+<td align="center">Syria</td>
+<td align="center">0.07</td>
+<td align="center">0.5</td>
+<td align="center">0.06</td>
+<td align="center">0</td>
+<td align="center">0.09</td>
+<td align="center">0.13</td>
+<td align="center">0.03</td>
+</tr>
+<tr class="even">
+<td align="center">Thailand</td>
+<td align="center">0.3</td>
+<td align="center">0.75</td>
+<td align="center">0.05</td>
+<td align="center">0.1</td>
+<td align="center">0.05</td>
+<td align="center">0.13</td>
+<td align="center">0.05</td>
 </tr>
 </tbody>
 </table>
@@ -361,20 +588,17 @@ pander(combo_norm)
 Score
 -----
 
-By summing our normalized and weighted variables, we create our `Score` data.
+By `sum`ming our normalized and weighted variables, we create our `Score` data. We also `round` these data to `2` digits following the decimal point.
 
 ``` r
-Score <- combo_norm %>%
+Score <- combo_weighted %>%
   group_by(Country) %>%
-  summarise(Score = sum(`Improved water source (% of population with access)`,
-                      `Life expectancy at birth, total (years)`,
-                      `Urban population growth (annual %)`,
-                      `Adult Literacy Rate (% Ages 15 and older)`,
-                      `Population with at least some secondary education (% ages 25 and older)`,
-                      `Mean years of schooling (years)`,
-                      `Inequality in education (%)`,
-                      `GNI per capita (2011 PPP$)`,
-                      `Press Freedom Score (0 worst - 100 best)`))
+  summarise(Score = round(sum(`Water Access`,
+                              `Life Expectany`,
+                              `Urban Population`,
+                              `GNI per Capita`,
+                              `Press Freedom`,
+                              `Combined Education`), digits = 2))
 
 pander(Score)
 ```
@@ -393,35 +617,35 @@ pander(Score)
 <tbody>
 <tr class="odd">
 <td align="center">Cuba</td>
-<td align="center">6.39</td>
+<td align="center">0.64</td>
 </tr>
 <tr class="even">
 <td align="center">Ghana</td>
-<td align="center">2.69</td>
+<td align="center">0.19</td>
 </tr>
 <tr class="odd">
 <td align="center">India</td>
-<td align="center">3.37</td>
+<td align="center">0.38</td>
 </tr>
 <tr class="even">
 <td align="center">Mexico</td>
-<td align="center">5.55</td>
+<td align="center">0.71</td>
 </tr>
 <tr class="odd">
 <td align="center">Russia</td>
-<td align="center">6.75</td>
+<td align="center">0.79</td>
 </tr>
 <tr class="even">
 <td align="center">South Africa</td>
-<td align="center">4.36</td>
+<td align="center">0.45</td>
 </tr>
 <tr class="odd">
 <td align="center">Syria</td>
-<td align="center">2.98</td>
+<td align="center">0.38</td>
 </tr>
 <tr class="even">
 <td align="center">Thailand</td>
-<td align="center">5.44</td>
+<td align="center">0.68</td>
 </tr>
 </tbody>
 </table>
@@ -431,11 +655,7 @@ With our `Score` data, we can then create our `Rank` data.
 ``` r
 Score_Rank <- Score %>%
   mutate(Rank = dense_rank(desc(Score)))
-```
 
-We then inspect our `Score_Rank` data.
-
-``` r
 pander(Score_Rank)
 ```
 
@@ -455,43 +675,43 @@ pander(Score_Rank)
 <tbody>
 <tr class="odd">
 <td align="center">Cuba</td>
-<td align="center">6.39</td>
-<td align="center">2</td>
+<td align="center">0.64</td>
+<td align="center">4</td>
 </tr>
 <tr class="even">
 <td align="center">Ghana</td>
-<td align="center">2.69</td>
-<td align="center">8</td>
+<td align="center">0.19</td>
+<td align="center">7</td>
 </tr>
 <tr class="odd">
 <td align="center">India</td>
-<td align="center">3.37</td>
+<td align="center">0.38</td>
 <td align="center">6</td>
 </tr>
 <tr class="even">
 <td align="center">Mexico</td>
-<td align="center">5.55</td>
-<td align="center">3</td>
+<td align="center">0.71</td>
+<td align="center">2</td>
 </tr>
 <tr class="odd">
 <td align="center">Russia</td>
-<td align="center">6.75</td>
+<td align="center">0.79</td>
 <td align="center">1</td>
 </tr>
 <tr class="even">
 <td align="center">South Africa</td>
-<td align="center">4.36</td>
+<td align="center">0.45</td>
 <td align="center">5</td>
 </tr>
 <tr class="odd">
 <td align="center">Syria</td>
-<td align="center">2.98</td>
-<td align="center">7</td>
+<td align="center">0.38</td>
+<td align="center">6</td>
 </tr>
 <tr class="even">
 <td align="center">Thailand</td>
-<td align="center">5.44</td>
-<td align="center">4</td>
+<td align="center">0.68</td>
+<td align="center">3</td>
 </tr>
 </tbody>
 </table>
@@ -506,6 +726,7 @@ To match this we need to convert our `data_frame` to a `matrix`, transpose the d
 Score_Rank <- Score_Rank %>%
   as.matrix() %>%
   t()
+
 
 pander(Score_Rank)
 ```
@@ -536,25 +757,25 @@ pander(Score_Rank)
 </tr>
 <tr class="even">
 <td align="center"><strong>Score</strong></td>
-<td align="center">6.39</td>
-<td align="center">2.69</td>
-<td align="center">3.37</td>
-<td align="center">5.55</td>
-<td align="center">6.75</td>
-<td align="center">4.36</td>
-<td align="center">2.98</td>
-<td align="center">5.44</td>
+<td align="center">0.64</td>
+<td align="center">0.19</td>
+<td align="center">0.38</td>
+<td align="center">0.71</td>
+<td align="center">0.79</td>
+<td align="center">0.45</td>
+<td align="center">0.38</td>
+<td align="center">0.68</td>
 </tr>
 <tr class="odd">
 <td align="center"><strong>Rank</strong></td>
-<td align="center">2</td>
-<td align="center">8</td>
+<td align="center">4</td>
+<td align="center">7</td>
 <td align="center">6</td>
-<td align="center">3</td>
+<td align="center">2</td>
 <td align="center">1</td>
 <td align="center">5</td>
-<td align="center">7</td>
-<td align="center">4</td>
+<td align="center">6</td>
+<td align="center">3</td>
 </tr>
 </tbody>
 </table>
@@ -568,26 +789,130 @@ Score_Rank
 ```
 
     ##       [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]   [,8]  
-    ## Score "6.39" "2.69" "3.37" "5.55" "6.75" "4.36" "2.98" "5.44"
-    ## Rank  "2"    "8"    "6"    "3"    "1"    "5"    "7"    "4"
+    ## Score "0.64" "0.19" "0.38" "0.71" "0.79" "0.45" "0.38" "0.68"
+    ## Rank  "4"    "7"    "6"    "2"    "1"    "5"    "6"    "3"
 
 Data Restructuring
 ------------------
 
-In order to bold the column for Syria, we use the following:
-
-``` r
-emphasize.strong.cols(which(combo_norm$Country == "Syria",
-                            arr.ind = TRUE))
-```
-
+<!-- In order to bold the column for Syria, we use the following: -->
+<!-- ```{r} -->
+<!-- emphasize.strong.cols(which(combo_weighted$Country == "Syria", -->
+<!--                             arr.ind = TRUE)) -->
+<!-- ``` -->
 To produce the desired table, we convert our `combo_norm` variable to a matrix, which we then transpose and store in a variable called `combo_norm_matr_trans`.
 
 ``` r
-combo_norm_matr_trans <- combo_norm %>%
+combo_norm_matr_trans <- combo_weighted %>%
   as.matrix() %>%
   t()
+
+pander(combo_norm_matr_trans)
 ```
+
+<table>
+<colgroup>
+<col width="25%" />
+<col width="7%" />
+<col width="8%" />
+<col width="8%" />
+<col width="9%" />
+<col width="9%" />
+<col width="15%" />
+<col width="8%" />
+<col width="10%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td align="center"><strong>Country</strong></td>
+<td align="center">Cuba</td>
+<td align="center">Ghana</td>
+<td align="center">India</td>
+<td align="center">Mexico</td>
+<td align="center">Russia</td>
+<td align="center">South Africa</td>
+<td align="center">Syria</td>
+<td align="center">Thailand</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Water Access</strong></td>
+<td align="center">0.21</td>
+<td align="center">0.00</td>
+<td align="center">0.19</td>
+<td align="center">0.25</td>
+<td align="center">0.27</td>
+<td align="center">0.15</td>
+<td align="center">0.07</td>
+<td align="center">0.30</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Life Expectancy</strong></td>
+<td align="center">1.00</td>
+<td align="center">0.06</td>
+<td align="center">0.38</td>
+<td align="center">0.85</td>
+<td align="center">0.53</td>
+<td align="center">0.00</td>
+<td align="center">0.50</td>
+<td align="center">0.75</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Urban Population</strong></td>
+<td align="center">0.11</td>
+<td align="center">0.06</td>
+<td align="center">0.00</td>
+<td align="center">0.12</td>
+<td align="center">0.10</td>
+<td align="center">0.08</td>
+<td align="center">0.06</td>
+<td align="center">0.05</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>GNI per Capita</strong></td>
+<td align="center">0.04</td>
+<td align="center">0.00</td>
+<td align="center">0.02</td>
+<td align="center">0.11</td>
+<td align="center">0.18</td>
+<td align="center">0.08</td>
+<td align="center">0.00</td>
+<td align="center">0.10</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Press Freedom</strong></td>
+<td align="center">0.09</td>
+<td align="center">0.00</td>
+<td align="center">0.02</td>
+<td align="center">0.05</td>
+<td align="center">0.08</td>
+<td align="center">0.01</td>
+<td align="center">0.09</td>
+<td align="center">0.05</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Combined Education</strong></td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Life Expectany</strong></td>
+<td align="center">0.06</td>
+<td align="center">0.00</td>
+<td align="center">0.02</td>
+<td align="center">0.05</td>
+<td align="center">0.03</td>
+<td align="center">0.00</td>
+<td align="center">0.03</td>
+<td align="center">0.05</td>
+</tr>
+</tbody>
+</table>
 
 Next, we bind `Score_Rank` to `combo_norm_matr_trans` by row and store the result in a variable called `combo_matrix`.
 
@@ -595,10 +920,12 @@ Next, we bind `Score_Rank` to `combo_norm_matr_trans` by row and store the resul
 combo_matrix <- rbind(combo_norm_matr_trans, Score_Rank)
 ```
 
-Before viewing the result, we bold our `Score` and `Rank` rows.
+Before viewing the result, we bold our `Score` and `Rank` rows and our `Syria` column.
 
 ``` r
 emphasize.strong.rows(c(1, nrow(combo_matrix), nrow(combo_matrix) - 1))
+
+emphasize.strong.cols(7)
 ```
 
 Summary Table
@@ -610,14 +937,14 @@ pander(combo_matrix)
 
 <table>
 <colgroup>
-<col width="23%" />
-<col width="7%" />
-<col width="8%" />
+<col width="19%" />
 <col width="8%" />
 <col width="9%" />
 <col width="9%" />
-<col width="13%" />
-<col width="8%" />
+<col width="9%" />
+<col width="9%" />
+<col width="14%" />
+<col width="9%" />
 <col width="10%" />
 </colgroup>
 <tbody>
@@ -633,18 +960,18 @@ pander(combo_matrix)
 <td align="center"><strong>Thailand</strong></td>
 </tr>
 <tr class="even">
-<td align="center"><strong>Improved water source (% of population with access)</strong></td>
-<td align="center">0.69</td>
+<td align="center"><strong>Water Access</strong></td>
+<td align="center">0.21</td>
 <td align="center">0.00</td>
-<td align="center">0.64</td>
-<td align="center">0.83</td>
-<td align="center">0.91</td>
-<td align="center">0.51</td>
-<td align="center"><strong>0.25</strong></td>
-<td align="center">1.00</td>
+<td align="center">0.19</td>
+<td align="center">0.25</td>
+<td align="center">0.27</td>
+<td align="center">0.15</td>
+<td align="center"><strong>0.07</strong></td>
+<td align="center">0.30</td>
 </tr>
 <tr class="odd">
-<td align="center"><strong>Life expectancy at birth, total (years)</strong></td>
+<td align="center"><strong>Life Expectancy</strong></td>
 <td align="center">1.00</td>
 <td align="center">0.06</td>
 <td align="center">0.38</td>
@@ -655,103 +982,81 @@ pander(combo_matrix)
 <td align="center">0.75</td>
 </tr>
 <tr class="even">
-<td align="center"><strong>Urban population growth (annual %)</strong></td>
-<td align="center">0.47</td>
-<td align="center">1.00</td>
-<td align="center">0.80</td>
-<td align="center">0.69</td>
-<td align="center">0.46</td>
-<td align="center">0.80</td>
-<td align="center"><strong>0.00</strong></td>
-<td align="center">0.90</td>
-</tr>
-<tr class="odd">
-<td align="center"><strong>Adult Literacy Rate (% Ages 15 and older)</strong></td>
-<td align="center">1.00</td>
-<td align="center">0.16</td>
-<td align="center">0.00</td>
-<td align="center">0.81</td>
-<td align="center">1.00</td>
-<td align="center">0.80</td>
-<td align="center"><strong>0.52</strong></td>
-<td align="center">0.89</td>
-</tr>
-<tr class="even">
-<td align="center"><strong>Population with at least some secondary education (% ages 25 and older)</strong></td>
-<td align="center">0.82</td>
-<td align="center">0.38</td>
-<td align="center">0.18</td>
-<td align="center">0.33</td>
-<td align="center">1.00</td>
-<td align="center">0.65</td>
-<td align="center"><strong>0.00</strong></td>
-<td align="center">0.08</td>
-</tr>
-<tr class="odd">
-<td align="center"><strong>Mean years of schooling (years)</strong></td>
-<td align="center">0.97</td>
-<td align="center">0.20</td>
-<td align="center">0.08</td>
-<td align="center">0.44</td>
-<td align="center">1.00</td>
-<td align="center">0.73</td>
-<td align="center"><strong>0.00</strong></td>
-<td align="center">0.36</td>
-</tr>
-<tr class="even">
-<td align="center"><strong>Inequality in education (%)</strong></td>
-<td align="center">0.23</td>
-<td align="center">0.86</td>
-<td align="center">1.00</td>
-<td align="center">0.44</td>
-<td align="center">0.00</td>
-<td align="center">0.35</td>
-<td align="center"><strong>0.73</strong></td>
-<td align="center">0.35</td>
-</tr>
-<tr class="odd">
-<td align="center"><strong>GNI per capita (2011 PPP$)</strong></td>
-<td align="center">0.21</td>
-<td align="center">0.03</td>
+<td align="center"><strong>Urban Population</strong></td>
 <td align="center">0.11</td>
-<td align="center">0.63</td>
-<td align="center">1.00</td>
-<td align="center">0.44</td>
+<td align="center">0.06</td>
+<td align="center">0.00</td>
+<td align="center">0.12</td>
+<td align="center">0.10</td>
+<td align="center">0.08</td>
+<td align="center"><strong>0.06</strong></td>
+<td align="center">0.05</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>GNI per Capita</strong></td>
+<td align="center">0.04</td>
+<td align="center">0.00</td>
+<td align="center">0.02</td>
+<td align="center">0.11</td>
+<td align="center">0.18</td>
+<td align="center">0.08</td>
 <td align="center"><strong>0.00</strong></td>
-<td align="center">0.53</td>
+<td align="center">0.10</td>
 </tr>
 <tr class="even">
-<td align="center"><strong>Press Freedom Score (0 worst - 100 best)</strong></td>
-<td align="center">1.00</td>
+<td align="center"><strong>Press Freedom</strong></td>
+<td align="center">0.09</td>
 <td align="center">0.00</td>
-<td align="center">0.18</td>
-<td align="center">0.53</td>
-<td align="center">0.85</td>
+<td align="center">0.02</td>
+<td align="center">0.05</td>
 <td align="center">0.08</td>
-<td align="center"><strong>0.98</strong></td>
-<td align="center">0.58</td>
+<td align="center">0.01</td>
+<td align="center"><strong>0.09</strong></td>
+<td align="center">0.05</td>
+</tr>
+<tr class="odd">
+<td align="center"><strong>Combined Education</strong></td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center">0.13</td>
+<td align="center"><strong>0.13</strong></td>
+<td align="center">0.13</td>
+</tr>
+<tr class="even">
+<td align="center"><strong>Life Expectany</strong></td>
+<td align="center">0.06</td>
+<td align="center">0.00</td>
+<td align="center">0.02</td>
+<td align="center">0.05</td>
+<td align="center">0.03</td>
+<td align="center">0.00</td>
+<td align="center"><strong>0.03</strong></td>
+<td align="center">0.05</td>
 </tr>
 <tr class="odd">
 <td align="center"><strong>Score</strong></td>
-<td align="center"><strong>6.39</strong></td>
-<td align="center"><strong>2.69</strong></td>
-<td align="center"><strong>3.37</strong></td>
-<td align="center"><strong>5.55</strong></td>
-<td align="center"><strong>6.75</strong></td>
-<td align="center"><strong>4.36</strong></td>
-<td align="center"><strong>2.98</strong></td>
-<td align="center"><strong>5.44</strong></td>
+<td align="center"><strong>0.64</strong></td>
+<td align="center"><strong>0.19</strong></td>
+<td align="center"><strong>0.38</strong></td>
+<td align="center"><strong>0.71</strong></td>
+<td align="center"><strong>0.79</strong></td>
+<td align="center"><strong>0.45</strong></td>
+<td align="center"><strong>0.38</strong></td>
+<td align="center"><strong>0.68</strong></td>
 </tr>
 <tr class="even">
 <td align="center"><strong>Rank</strong></td>
-<td align="center"><strong>2</strong></td>
-<td align="center"><strong>8</strong></td>
+<td align="center"><strong>4</strong></td>
+<td align="center"><strong>7</strong></td>
 <td align="center"><strong>6</strong></td>
-<td align="center"><strong>3</strong></td>
+<td align="center"><strong>2</strong></td>
 <td align="center"><strong>1</strong></td>
 <td align="center"><strong>5</strong></td>
-<td align="center"><strong>7</strong></td>
-<td align="center"><strong>4</strong></td>
+<td align="center"><strong>6</strong></td>
+<td align="center"><strong>3</strong></td>
 </tr>
 </tbody>
 </table>
@@ -764,18 +1069,8 @@ To faciliate understanding the data, we can visualize it with a map.
 ``` r
 map_world <- map_data(map = "world")
 
-index_countries <- combo_norm %>%
-  group_by(Country) %>%
-  summarise(`Index Sum` = sum(`Improved water source (% of population with access)`,
-                    `Life expectancy at birth, total (years)`,
-                    `Urban population growth (annual %)`,
-                    `Adult Literacy Rate (% Ages 15 and older)`,
-                    `Population with at least some secondary education (% ages 25 and older)`,
-                    `Mean years of schooling (years)`,
-                    `Inequality in education (%)`,
-                    `GNI per capita (2011 PPP$)`,
-                    `Press Freedom Score (0 worst - 100 best)`)) %>%
-  inner_join(map_world, by = c("Country" = "region")) 
+index_countries <- Score %>%
+  inner_join(map_world, by = c("Country" = "region"))
 
 nonindex_countries <- map_world %>%
   anti_join(combo_norm, by = c("region" = "Country"))
@@ -786,7 +1081,7 @@ index_map <- ggplot() +
   geom_polygon(data = index_countries,
                aes(x = long, y = lat,
                    group = group,
-                   fill = `Index Sum`),  size = 0.01) +
+                   fill = Score),  size = 0.01) +
   geom_polygon(data = nonindex_countries,
                aes(x = long, y = lat, group = group),
                fill = "white",
@@ -794,7 +1089,7 @@ index_map <- ggplot() +
   coord_map() +
   scale_fill_distiller(type = "seq",
                        palette = "RdBu",
-                       breaks = pretty_breaks(n=10), 
+                       breaks = pretty_breaks(n=10),
                        direction = 1) +
   coord_fixed(ratio = 1.5) +
   guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE)) +
@@ -812,4 +1107,4 @@ index_map <- ggplot() +
 index_map
 ```
 
-![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-20-1.png)
+![](HW1_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-19-1.png)

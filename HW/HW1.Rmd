@@ -10,132 +10,240 @@ author: "Team Syria"
 # output:
 #   html_document:
 #     toc: yes
-#     toc_float: true
-    
+
 output:
   rmarkdown::github_document:
-    toc: true
+    toc: yes
+    
+# output: word_document
+
 ---
 
-<style>
-    body .main-container {
-        max-width: 90%;
-    }
-</style>
+<!-- <style> -->
+<!--     body .main-container { -->
+<!--         max-width: 90%; -->
+<!--     } -->
+<!-- </style> -->
 
-
-```{r}
-library(googledrive)
+Environment Prep
+```{r message=FALSE, warning=FALSE}
+# load packages
 library(tidyverse)
 library(readxl)
-library(lubridate)
 library(pander)
-# library(ggmap)
 library(scales)
 
 ```
 
 ```{r}
-combo <- read_excel("~/Development-Economics/data/combo.xlsx")
+# set options so tables render nicely
+pander::panderOptions('table.split.table', Inf)
 
 ```
 
+
+#Data
+Data were retrieved from:
+
+* [World Bank Data](https://data.worldbank.org)
+    + Improved water source (% of population with access)
+    + Life expectancy at birth, total (years)
+    + Urban population growth (annual %)
+* [UNDP Human Development Reports](http://hdr.undp.org/en/data)
+    + Adult Literacy Rate (% Ages 15 and older)
+    + Population with at least some secondary education (% ages 25 and older)
+    + Mean years of schooling (years)
+    + Inequality in education (%)
+    + GNI per capita (2011 PPP$)
+
+
+##Read and Inspect Raw Data
+We read the excel file containing our raw data and store it in a `data_frame` variable named `combo`.
+```{r}
+combo <- read_excel("~/Development-Economics/data/combo.xlsx")
+
+pander(combo)
+
+```
+
+
+
+
+##Normalize
+###Normalize Formula
+In order to normalize our values to a `0` to `1` scale, we use the following formula:
+
+>Divide (cardinal number – minimum) by (maximum – minimum)
+
+We create a function called `normalize` to achieve this result.
+
 ```{r}
 normalize <- function(x){
-  round((x - min(x)) / (max(x) - min(x)), digits = 2)
+  (x - min(x)) / (max(x) - min(x))
 }
 
 ```
 
-```{r}
-# weight_negatively <- function(x){
-  # x <- x * -1
-# }
 
-```
-
-
+##Mutate
+We take our `normalize()` function, apply it to our `combo` data, and store the results in a new `data_frame` called `combo_norm`. Since `Country` is a non-numeric column, `mutate_if` allows us to only apply our functions to columns where `is.numeric()` returns `TRUE`. We also rename our variables to simplify our table and drop any scale references.
 ```{r}
 combo_norm <- combo %>%
-  mutate_if(is.numeric, funs(normalize))
+  mutate_if(is.numeric, funs(normalize)) %>%
+  rename(`Press Freedom` = `Press Freedom Score (0 worst - 100 best)`,
+         `Water Access` = `Improved water source (% of population with access)`,
+         `Life Expectancy` = `Life expectancy at birth, total (years)`,
+         `Urban Population` = `Urban population %`,
+         `Adult Literacy` = `Adult Literacy Rate (% Ages 15 and older)`,
+         `GNI per Capita` = `GNI per capita (2011 PPP$)`
+         )
+
+pander(combo_norm)
 
 ```
 
+##Combine Education Variables
+We decided to combine our education variables by taking their `mean` and assigning it to a new variable called `Combined Education`.
 ```{r}
-Score <- combo_norm %>%
+combo_norm_comb_ed <- combo_norm %>%
+  mutate(`Combined Education` = mean(c(`Population with at least some secondary education (% ages 25 and older)`, `Mean years of schooling (years)`, `Adult Literacy`))) %>%
+  select(-`Population with at least some secondary education (% ages 25 and older)`,
+         -`Mean years of schooling (years)`,
+         -`Adult Literacy`)
+
+pander(combo_norm_comb_ed)
+
+```
+
+##Weights
+We decided on the following weighting scheme for our data, which we assign to individual variables. To ensure that we're weighting correctly, we also check that our weight `sum` tto `1`.
+```{r}
+water_wt <- 0.30
+education_wt <- 0.25
+GNI_wt <- 0.18
+urban_wt <- 0.12
+press_freedom_wt <- 0.09
+life_expect_wt <- 0.06
+
+weights <- c(water_wt, education_wt, GNI_wt, urban_wt, press_freedom_wt, life_expect_wt)
+
+sum(weights) == 1
+
+```
+
+In order to weight our data, we multiply each column by the appropriate weight variable. At this point, we also `round` our data to `2` digits following the decimal point.
+```{r}
+combo_weighted <- combo_norm_comb_ed %>%
+  mutate(`Water Access` = `Water Access` * water_wt,
+         `Life Expectany` = `Life Expectancy` * life_expect_wt,
+         `Urban Population` = `Urban Population` * urban_wt,
+         `GNI per Capita` = `GNI per Capita` * GNI_wt,
+         `Press Freedom` = `Press Freedom` * press_freedom_wt,
+         `Combined Education` = `Combined Education` * education_wt) %>%
+  mutate_if(is.numeric, funs(round(., digits = 2)))
+
+pander(combo_weighted)
+  
+```
+
+
+##Score
+By `sum`ming our normalized and weighted variables, we create our `Score` data. We also `round` these data to `2` digits following the decimal point.
+```{r}
+Score <- combo_weighted %>%
   group_by(Country) %>%
-  summarise(sum = sum(`Improved water source (% of population with access)`,
-                      `Life expectancy at birth, total (years)`,
-                      `Urban population growth (annual %)`,
-                      `Adult Literacy Rate (% Ages 15 and older)`,
-                      `Population with at least some secondary education (% ages 25 and older)`,
-                      `Mean years of schooling (years)`,
-                      `Inequality in education (%)`,
-                      `GNI per capita (2011 PPP$)`,
-                      `Press Freedom Score (0 worst - 100 best)`)) %>%
+  summarise(Score = round(sum(`Water Access`,
+                              `Life Expectany`,
+                              `Urban Population`,
+                              `GNI per Capita`,
+                              `Press Freedom`,
+                              `Combined Education`), digits = 2))
+
+pander(Score)
+
+```
+
+With our `Score` data, we can then create our `Rank` data.
+```{r}
+Score_Rank <- Score %>%
+  mutate(Rank = dense_rank(desc(Score)))
+
+pander(Score_Rank)
+
+```
+
+The example format that we have seen looks like so:
+
+![Alt text](https://github.com/DocSynaptogenesis/Development-Economics/blob/master/HW/images/trial_run_screencap.png)
+
+To match this we need to convert our `data_frame` to a `matrix`, transpose the data, and store it in a variable that we'll call `Score`.
+
+```{r}
+Score_Rank <- Score_Rank %>%
   as.matrix() %>%
   t()
 
-Score <- Score[-1,]
+
+pander(Score_Rank)
 
 ```
 
+We're then going to detach the `Country` row so that we can bind the `Score` and `Rank` rows to our summary table.
 ```{r}
-pander::panderOptions('table.split.table', Inf)
+Score_Rank <- Score_Rank[-1, ]
 
-emphasize.strong.cols(which(combo_norm$Country == "Syria",
-                            arr.ind = TRUE))
-
-combo_norm_matr_trans <- combo_norm %>%
-  as.matrix() %>%
-  t() %>%
-  na.omit() 
-
-combo_matrix <- rbind(combo_norm_matr_trans, Score)
-
-# emphasize.strong.rows(1)
-emphasize.strong.rows(c(1, nrow(combo_matrix)))
+Score_Rank
 
 ```
 
+
+##Data Restructuring
+<!-- In order to bold the column for Syria, we use the following: -->
+<!-- ```{r} -->
+<!-- emphasize.strong.cols(which(combo_weighted$Country == "Syria", -->
+<!--                             arr.ind = TRUE)) -->
+
+<!-- ``` -->
+
+To produce the desired table, we convert our `combo_norm` variable to a matrix, which we then transpose and store in a variable called `combo_norm_matr_trans`.
+```{r}
+combo_norm_matr_trans <- combo_weighted %>%
+  as.matrix() %>%
+  t()
+
+pander(combo_norm_matr_trans)
+
+```
+
+Next, we bind `Score_Rank` to `combo_norm_matr_trans` by row and store the result in a variable called `combo_matrix`.
+```{r}
+combo_matrix <- rbind(combo_norm_matr_trans, Score_Rank)
+
+```
+
+Before viewing the result, we bold our `Score` and `Rank` rows and our `Syria` column.
+```{r}
+emphasize.strong.rows(c(1, nrow(combo_matrix), nrow(combo_matrix) - 1))
+
+emphasize.strong.cols(7)
+
+```
+
+#Summary Table
 ```{r}
 pander(combo_matrix)
 
 ```
-
-```{r}
+#Map
+To faciliate understanding the data, we can visualize it with a map.
+```{r message=FALSE, warning=FALSE}
 map_world <- map_data(map = "world")
 
-# Score <- combo_norm %>%
-#   group_by(Country) %>%
-#   summarise(sum = sum(`Improved water source (% of population with access)`,
-#                       `Life expectancy at birth, total (years)`,
-#                       `Urban population growth (annual %)`,
-#                       `Adult Literacy Rate (% Ages 15 and older)`,
-#                       `Population with at least some secondary education (% ages 25 and older)`,
-#                       `Mean years of schooling (years)`,
-#                       `Inequality in education (%)`,
-#                       `GNI per capita (2011 PPP$)`,
-#                       `Press Freedom Score (0 worst - 100 best)`))
-
-index_countries <- combo_norm %>%
-  group_by(Country) %>%
-  summarise(`Index Sum` = sum(`Improved water source (% of population with access)`,
-                    `Life expectancy at birth, total (years)`,
-                    `Urban population growth (annual %)`,
-                    `Adult Literacy Rate (% Ages 15 and older)`,
-                    `Population with at least some secondary education (% ages 25 and older)`,
-                    `Mean years of schooling (years)`,
-                    `Inequality in education (%)`,
-                    `GNI per capita (2011 PPP$)`,
-                    `Press Freedom Score (0 worst - 100 best)`)) %>%
-  inner_join(map_world, by = c("Country" = "region")) 
+index_countries <- Score %>%
+  inner_join(map_world, by = c("Country" = "region"))
 
 nonindex_countries <- map_world %>%
   anti_join(combo_norm, by = c("region" = "Country"))
-
-
-index_map <- NULL
 
 ```
 
@@ -144,20 +252,26 @@ index_map <- ggplot() +
   geom_polygon(data = index_countries,
                aes(x = long, y = lat,
                    group = group,
-                   # fill = total_map$`Press Freedom Score (0 worst - 100 best)`),
-                   fill = `Index Sum`),  size = 0.01) +
+                   fill = Score),  size = 0.01) +
   geom_polygon(data = nonindex_countries,
                aes(x = long, y = lat, group = group),
-               # alpha = 0.1,
                fill = "white",
                size = 0.1) +
   coord_map() +
   scale_fill_distiller(type = "seq",
                        palette = "RdBu",
-                       breaks = pretty_breaks(n=10), 
+                       breaks = pretty_breaks(n=10),
                        direction = 1) +
   coord_fixed(ratio = 1.5) +
-  guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE))
+  guides(fill = guide_legend(keywidth = 1, keyheight = 3, reverse = TRUE)) +
+  ggtitle("Development Index") +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank()
+        )
 
 ```
 
